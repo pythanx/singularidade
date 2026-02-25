@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Singularidade: Gi & Gerson</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@200;400;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --accent: #ff4d6d; --gold: #d4af37; --bg: #000; --nebula: rgba(255, 77, 109, 0.15); }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; overflow: hidden; }
+        
+        body::after {
+            content: ""; position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 50%, var(--nebula), transparent 70%);
+            filter: blur(60px); z-index: -1; animation: drift 25s infinite alternate;
+        }
+        @keyframes drift { from { transform: scale(1); } to { transform: scale(1.2) translate(2%, 2%); } }
+
+        canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
+
+        #login { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; background: #000; z-index: 10000; transition: opacity 2.5s; }
+        .login-box { 
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); padding: 30px; 
+            border-radius: 20px; border: 1px solid rgba(255, 77, 109, 0.3); text-align: center; 
+            width: 85%; max-width: 400px; 
+        }
+        .movie-title { font-family: 'Dancing Script', cursive; font-size: 2.2rem; color: var(--accent); text-shadow: 0 0 15px var(--accent); margin-bottom: 10px; }
+        input { background: transparent; border: none; border-bottom: 2px solid var(--accent); color: #fff; font-size: 28px; text-align: center; width: 140px; outline: none; margin: 20px 0; letter-spacing: 8px; font-family: 'Montserrat'; }
+        .magic-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 12px 30px; border-radius: 50px; cursor: pointer; transition: 0.4s; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+        .magic-btn:hover { background: var(--accent); color: #fff; box-shadow: 0 0 30px var(--accent); }
+
+        .singularity-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 280px; height: 280px; z-index: 0; opacity: 0; transition: 5s ease-in-out; }
+        .black-hole { 
+            width: 100%; height: 100%; background: #000; border-radius: 50%; 
+            box-shadow: 0 0 50px 10px #fff, 0 0 100px 30px var(--accent), 0 0 180px 50px rgba(255, 77, 109, 0.2);
+            animation: breathe 6s infinite alternate ease-in-out; 
+        }
+        @keyframes breathe { 0% { transform: scale(0.95); } 100% { transform: scale(1.05); } }
+
+        #content { position: fixed; inset: 0; z-index: 2; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 0 20px; }
+        .text-wrapper { max-width: 650px; text-align: center; transition: opacity 1.5s; opacity: 0; }
+        .typing { font-weight: 200; line-height: 2.2; font-size: 1.1rem; }
+        .hl { color: var(--accent); font-weight: 700; text-shadow: 0 0 15px var(--accent); }
+
+        #final-overlay { position: fixed; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.9); z-index: 11000; padding: 20px; }
+        
+        .carousel-outer { position: relative; width: 260px; height: 260px; display: flex; justify-content: center; align-items: center; opacity: 0; transition: 3s; margin: 15px 0; }
+        .carousel-outer::before { content: ""; position: absolute; inset: -10px; border: 2px dashed var(--accent); border-radius: 50%; animation: rotateRing 15s linear infinite; opacity: 0.4; }
+        @keyframes rotateRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .carousel-container { width: 240px; height: 240px; position: relative; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 40px var(--accent); overflow: hidden; }
+        .carousel-container img { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: 1.2s ease-in-out; }
+        .carousel-container img.active { opacity: 1; }
+
+        .hud-group { text-align: center; opacity: 0; transition: 3s; margin-top: 15px; font-family: 'Orbitron', sans-serif; width: 100%; max-width: 300px; }
+        .hud-box { border-left: 3px solid var(--accent); padding-left: 12px; margin: 10px 0; text-align: left; }
+        .hud-label { font-size: 0.6rem; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+        .hud-value { font-size: 0.9rem; color: #fff; text-shadow: 0 0 10px var(--accent); }
+
+        .signature { font-family: 'Dancing Script', cursive; font-size: 2.5rem; color: var(--accent); opacity: 0; transition: 4s; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div style="display:none;">
+    <img src="https://i.postimg.cc/ZKMVHkQS/Whats-App-Image-2026-01-01-at-08-12-23.jpg">
+    <img src="https://i.postimg.cc/65bWMrFs/Whats_App_Image_2025_12_21_at_19_03_36.jpg">
+    <img src="https://i.postimg.cc/TYNdtVFZ/Whats_App_Image_2025_12_26_at_18_48_25.jpg">
+    <img src="https://i.postimg.cc/CLrhcGX9/Whats_App_Image_2025_12_26_at_18_48_25_(1).jpg">
+    <img src="https://i.postimg.cc/15VFc3YH/Whats_App_Image_2026_02_04_at_20_34_33_(1).jpg">
+</div>
+
+<audio id="spaceSound" loop>
+    <source src="butterflies.mp3" type="audio/mpeg">
+</audio>
+
+<div id="login">
+    <div class="login-box">
+        <div class="movie-title">Como eu era antes de você</div>
+        <p>Amor, insira a coordenada da colisão (a data que nos conhecemos):</p>
+        <input type="text" id="pass" maxlength="4" placeholder="DDMM" inputmode="numeric">
+        <br>
+        <button class="magic-btn" onclick="ignite()">Entrar</button>
+    </div>
+</div>
+
+<div class="singularity-container" id="hole"><div class="black-hole"></div></div>
+<canvas id="starsCanvas"></canvas>
+
+<div id="content">
+    <div class="text-wrapper" id="wrapper">
+        <div id="texto" class="typing"></div>
+    </div>
+</div>
+
+<div id="final-overlay">
+    <h2 id="final-ask" style="font-weight: 200; letter-spacing: 2px; margin-bottom: 20px; text-align: center;">Então, fica comigo para sempre?</h2>
+    <button id="btnSempre" class="magic-btn" onclick="revealFinal()">Sempre!</button>
+    
+    <div id="nameDisplay" class="movie-title" style="display:none; font-size: 3rem; margin: 5px 0;">Gerson</div>
+    
+    <div class="carousel-outer" id="carouselOuter">
+        <div class="carousel-container" id="carousel">
+            <img src="https://i.postimg.cc/ZKMVHkQS/Whats-App-Image-2026-01-01-at-08-12-23.jpg" class="active">
+            <img src="https://i.postimg.cc/65bWMrFs/Whats_App_Image_2025_12_21_at_19_03_36.jpg">
+            <img src="https://i.postimg.cc/TYNdtVFZ/Whats_App_Image_2025_12_26_at_18_48_25.jpg">
+            <img src="https://i.postimg.cc/CLrhcGX9/Whats_App_Image_2025_12_26_at_18_48_25_(1).jpg">
+            <img src="https://i.postimg.cc/15VFc3YH/Whats_App_Image_2026_02_04_at_20_34_33_(1).jpg">
+        </div>
+    </div>
+
+    <div class="hud-group" id="counters">
+        <div class="hud-box">
+            <div class="hud-label">Uptime_Conexão</div>
+            <div class="hud-value" id="countEncontro"></div>
+        </div>
+        <div class="hud-box">
+            <div class="hud-label">Estágio_Namoro</div>
+            <div class="hud-value" id="countNamoro"></div>
+        </div>
+    </div>
+
+    <div id="sig" class="signature">Com amor, sua Gi.</div>
+</div>
+
+<script>
+    const canvas = document.getElementById("starsCanvas");
+    const ctx = canvas.getContext("2d");
+    const audio = document.getElementById("spaceSound");
+    let stars = [], butterflies = [], warpSpeed = 0.5, bflyActive = false;
+
+    const encontroDate = new Date("2025-12-17T00:00:00");
+    const namoroDate = new Date("2025-12-25T00:00:00");
+
+    const paragrafos = [
+        "Amor,",
+        "Há muito tempo que não escrevo nada, e muito menos tenho lido romances...",
+        "Então, perdoe-me pelos erros que possam vir da escrita enferrujada e do vocabulário empobrecido pela falta de prática...",
+        "Apesar da minha aparência jovial e convenhamos, divina, os hobbies de adolescente deram lugar às obrigações da vida adulta...",
+        "Além disso, se houvesse usado papel, certamente você deveria decifrar a minha horrorosa caligrafia e as prováveis lágrimas que manchariam meus hieróglifos.",
+        "Felizmente, a nerdice que habita em mim abraça a tecnologia em substituição aos manuscritos...",
+        "Não faço muito o tipo que comemora datas. Antes de você, eu não chamava ninguém de “amor” ...",
+        "Por isso sempre te digo que você é o meu <span class='hl'>“primeiro”</span> e o <span class='hl'>“último”</span>...",
+        "Nos conhecemos de um jeito improvável, em um ambiente inóspito e você foi a melhor coisa que me aconteceu!",
+        "Eu lembro do primeiro dia: o mar agitado, as mil risadas, o desejo ardente e uma conexão implacável.",
+        "Embora dois meses pareçam precoces para o observador externo ou para um casal comum...",
+        "Contigo, o <span class='hl'>espaço-tempo se distorce</span>. É quase como se detivéssemos nosso próprio <span class='hl'>horizonte de eventos</span>.",
+        "Nos apossamos da intensidade e da gravidade no caos do nosso universo singular.",
+        "O que eu quero dizer é que, sessenta dias com você me parece o reflexo de uma vida inteira.",
+        "Quase como se estivéssemos habitando um <span class='hl'>buraco negro</span>, vivendo um tempo que se curva apenas à gravidade de nossos corpos e uma paz que eu nunca havia sentido.",
+        "Eu realmente achei que você fosse ser só mais um encontro de verão. Mas você ficou...",
+        "Ficou no 'bom dia', no 'cheguei no trabalho', no 'estou em casa'. Ficou no chocolate da TPM e no cuidado com a minha rotina.",
+        "Ficou nas fotos do cabelo cortado, na barba aparada e nos vídeos de cachorros de rua que você me manda.",
+        "Ficou nos desentendimentos que resolvemos e nas chamadas de vídeo quase diárias.",
+        "Ficou no <span class='hl'>sexo que se tornou amor</span> e que virou o meu mundo de ponta-cabeça.",
+        "Você fica na constância, na segurança, na parceria, na reciprocidade, no carinho, no respeito e na escolha mútua de todos os dias.",
+        "Depois que te conheci, me senti a Louisa Clark de <span class='hl'>“Como Eu Era Antes de Você”</span>.",
+        "Você me ensina e desperta a minha melhor forma. Contigo tudo é leve e simples.",
+        "Eu não preciso pedir pelo óbvio; eu simplesmente sou escolhida.",
+        "Você é o verso em carne de “my man...”: <span class='hl'>‘You make it so easy to cater to you, baby’</span>",
+        "Se meus pensamentos ou os nossos momentos juntos pudessem ser transcritos em música, eu ouviria <span class='hl'>“Butterflies”</span> em repeat mental.",
+        "“You came, came into my life... Then made everything right again... I still get butterflies.”",
+        "É engraçado, porque antes de você não havia borboletas. Eu as chamava de “vermes do juízo final”.",
+        "Mas com você, elas voam livremente. <span class='hl'>Tornaram-se borboletas.</span>",
+        "Se isso foi só o começo e já foi tão intenso, eu mal posso esperar pra viver o resto da vida com você!",
+        "Obrigada por ser meu parceiro, meu porto seguro. Eu te amo muitãooooo!",
+        "Feliz dois meses de nós, meu amor! ❤️"
+    ];
+
+    function init() { 
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight; 
+        stars = Array.from({length: 600}, () => ({ 
+            x: Math.random()*canvas.width - canvas.width/2, 
+            y: Math.random()*canvas.height - canvas.height/2, 
+            z: Math.random()*canvas.width 
+        })); 
+    }
+    
+    function run() {
+        ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(s => { 
+            s.z -= warpSpeed * 5; if(s.z<=0) s.z=canvas.width; 
+            let sx = (s.x / s.z) * canvas.width + canvas.width/2;
+            let sy = (s.y / s.z) * canvas.width + canvas.height/2;
+            let size = (1 - s.z/canvas.width) * 2;
+            ctx.beginPath(); ctx.arc(sx, sy, size, 0, Math.PI*2); 
+            ctx.fillStyle = `rgba(255,255,255,${1 - s.z/canvas.width})`; ctx.fill(); 
+        });
+        if(bflyActive) { 
+            if(Math.random()>0.9) butterflies.push({x: Math.random()*canvas.width, y: canvas.height+50, velY: Math.random()*-2-1, size: Math.random()*18+10}); 
+            butterflies.forEach((b,i) => { b.y += b.velY; b.x += Math.sin(b.y*0.05)*3; ctx.font = `${b.size}px serif`; ctx.fillText("🦋", b.x, b.y); if(b.y<-50) butterflies.splice(i,1); }); 
+        }
+        requestAnimationFrame(run);
+    }
+    window.addEventListener('resize', init); init(); run();
+
+    function ignite() {
+        if(document.getElementById("pass").value.trim() === "1712") {
+            audio.volume = 0.5; audio.play().catch(() => {});
+            warpSpeed = 15; document.getElementById("login").style.opacity = "0";
+            setTimeout(() => { 
+                document.getElementById("login").style.display = "none"; 
+                document.getElementById("content").style.display = "flex"; 
+                document.getElementById("hole").style.opacity = "1"; 
+                warpSpeed = 0.4; sequence(); 
+            }, 1500);
+        } else { alert("Data incorreta, amor."); }
+    }
+
+    async function sequence() {
+        const wrapper = document.getElementById("wrapper");
+        const textoDiv = document.getElementById("texto");
+        for (let p of paragrafos) {
+            textoDiv.innerHTML = ""; wrapper.style.opacity = "1";
+            await typeParagraph(p, textoDiv);
+            await new Promise(r => setTimeout(r, 2600)); 
+            wrapper.style.opacity = "0"; 
+            await new Promise(r => setTimeout(r, 1400)); 
+        }
+        document.getElementById("content").style.display = "none";
+        document.getElementById("final-overlay").style.display = "flex";
+    }
+
+    function typeParagraph(text, element) {
+        return new Promise(resolve => {
+            let i = 0;
+            const interval = setInterval(() => {
+                if (text[i] === '<') { let end = text.indexOf('>', i); element.innerHTML += text.substring(i, end + 1); i = end + 1; }
+                else { element.innerHTML += text[i]; i++; }
+                if (text.includes("Butterflies")) bflyActive = true;
+                if (i >= text.length) { clearInterval(interval); resolve(); }
+            }, 50);
+        });
+    }
+
+    function revealFinal() {
+        document.getElementById("final-ask").style.opacity = "0";
+        document.getElementById("btnSempre").style.display = "none";
+        const nameDisplay = document.getElementById("nameDisplay");
+        nameDisplay.style.display = "block";
+        warpSpeed = 4;
+        
+        setTimeout(() => {
+            nameDisplay.style.transition = "2s";
+            nameDisplay.style.filter = "blur(15px)";
+            nameDisplay.style.opacity = "0";
+            
+            setTimeout(() => {
+                nameDisplay.innerText = "Meu Amor";
+                nameDisplay.style.filter = "blur(0)";
+                nameDisplay.style.opacity = "1";
+                nameDisplay.style.color = "#fff";
+                
+                document.getElementById("carouselOuter").style.opacity = "1";
+                document.getElementById("counters").style.opacity = "1";
+                document.getElementById("sig").style.opacity = "1";
+                
+                const imgs = document.querySelectorAll("#carousel img");
+                let current = 0;
+                let loops = 0;
+                const totalLoopsNeeded = 3; // Passar 3 vezes por todas as fotos
+
+                const carouselInterval = setInterval(() => { 
+                    imgs[current].classList.remove("active"); 
+                    current++;
+                    
+                    if(current >= imgs.length) {
+                        current = 0;
+                        loops++;
+                    }
+                    
+                    if(loops >= totalLoopsNeeded) {
+                        clearInterval(carouselInterval);
+                        startSelfDestruct();
+                    } else {
+                        imgs[current].classList.add("active");
+                    }
+                }, 3000); 
+
+                setInterval(() => {
+                    const diffE = new Date() - encontroDate;
+                    document.getElementById("countEncontro").innerText = `${Math.floor(diffE/(864e5))}D ${Math.floor(diffE/36e5%24)}H ${Math.floor(diffE/6e4%60)}M ${Math.floor(diffE/1e3%60)}S`;
+                    const diffN = new Date() - namoroDate;
+                    document.getElementById("countNamoro").innerText = `${Math.floor(diffN/(864e5))}D ${Math.floor(diffN/36e5%24)}H ${Math.floor(diffN/6e4%60)}M ${Math.floor(diffN/1e3%60)}S`;
+                }, 1000);
+            }, 1500);
+        }, 2000);
+    }
+
+    function startSelfDestruct() {
+        setTimeout(() => {
+            document.body.style.transition = "10s";
+            document.body.style.backgroundColor = "#000";
+            document.getElementById("final-overlay").style.opacity = "0";
+            document.getElementById("hole").style.opacity = "0";
+            const fade = setInterval(() => {
+                if (audio.volume > 0.01) {
+                    audio.volume *= 0.9; // Fade logarítmico mais suave
+                } else { 
+                    audio.pause(); 
+                    clearInterval(fade); 
+                    document.body.innerHTML = ""; 
+                    window.close(); 
+                }
+            }, 200);
+        }, 5000); 
+    }
+</script>
+</body>
+</html>
