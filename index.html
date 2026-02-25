@@ -111,7 +111,7 @@
 
     <div class="hud-group" id="counters">
         <div class="hud-box">
-            <div class="hud-label">Quanto tempo nos conhecemos.</div>
+            <div class="hud-label">Quanto tempo nos conhecemos</div>
             <div class="hud-value" id="countEncontro"></div>
         </div>
         <div class="hud-box">
@@ -127,7 +127,7 @@
     const canvas = document.getElementById("starsCanvas");
     const ctx = canvas.getContext("2d");
     const audio = document.getElementById("spaceSound");
-    let stars = [], butterflies = [], warpSpeed = 0.5, bflyActive = false;
+    let stars = [], butterflies = [], warpSpeed = 0.5, bflyActive = false, wakeLock = null;
 
     const encontroDate = new Date("2025-12-17T00:00:00");
     const namoroDate = new Date("2025-12-25T00:00:00");
@@ -169,6 +169,15 @@
         "Feliz dois meses de nós, meu amor! ❤️"
     ];
 
+    // Wake Lock - Manter tela ligada
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+            }
+        } catch (err) {}
+    }
+
     function init() { 
         canvas.width = window.innerWidth; canvas.height = window.innerHeight; 
         stars = Array.from({length: 600}, () => ({ 
@@ -198,6 +207,7 @@
 
     function ignite() {
         if(document.getElementById("pass").value.trim() === "1712") {
+            requestWakeLock(); // Ativa trava de tela
             audio.volume = 0.5; audio.play().catch(() => {});
             warpSpeed = 15; document.getElementById("login").style.opacity = "0";
             setTimeout(() => { 
@@ -258,19 +268,12 @@
                 document.getElementById("sig").style.opacity = "1";
                 
                 const imgs = document.querySelectorAll("#carousel img");
-                let current = 0;
-                let loops = 0;
-                const totalLoopsNeeded = 3; // Passar 3 vezes por todas as fotos
+                let current = 0, loops = 0, totalLoopsNeeded = 3;
 
                 const carouselInterval = setInterval(() => { 
                     imgs[current].classList.remove("active"); 
                     current++;
-                    
-                    if(current >= imgs.length) {
-                        current = 0;
-                        loops++;
-                    }
-                    
+                    if(current >= imgs.length) { current = 0; loops++; }
                     if(loops >= totalLoopsNeeded) {
                         clearInterval(carouselInterval);
                         startSelfDestruct();
@@ -296,12 +299,11 @@
             document.getElementById("final-overlay").style.opacity = "0";
             document.getElementById("hole").style.opacity = "0";
             const fade = setInterval(() => {
-                if (audio.volume > 0.01) {
-                    audio.volume *= 0.9; // Fade logarítmico mais suave
-                } else { 
-                    audio.pause(); 
-                    clearInterval(fade); 
+                if (audio.volume > 0.01) { audio.volume *= 0.9; } 
+                else { 
+                    audio.pause(); clearInterval(fade); 
                     document.body.innerHTML = ""; 
+                    if (wakeLock) wakeLock.release();
                     window.close(); 
                 }
             }, 200);
@@ -309,6 +311,4 @@
     }
 </script>
 </body>
-
 </html>
-
